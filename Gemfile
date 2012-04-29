@@ -23,7 +23,7 @@ group :development do
   # gem 'rb-fchange'
 
   # Windows: Uncomment for visual notifications
-  # gem 'rb-notifu'
+  gem 'rb-notifu'
 
   # Windows: Uncomment for console colors
   # gem 'win32console'
