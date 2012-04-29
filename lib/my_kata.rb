@@ -1,5 +1,26 @@
-class Utf8Parser
+module AmendableEnumerable
   include Enumerable
+
+  def each
+    @pending_value = nil
+    each_with_amend do |value|
+      if @pending_value
+        yield @pending_value
+      end
+      @pending_value = value
+    end
+    if @pending_value
+      yield @pending_value
+    end
+  end
+
+  def amend
+    @pending_value = yield @pending_value
+  end
+end
+
+class Utf8Parser
+  include AmendableEnumerable
   def self.display_byte_in_binary(b)
     place = 128
     s = ""
@@ -41,37 +62,25 @@ class Utf8Parser
     return b & 0b11110000 == 0b11100000
   end
 
-  def each
-    started_long_character = false
-    long_character = 0
+  def each_with_amend
     @utf8_string.bytes.each do |b|
       if Utf8Parser.is_continuation_character? b
         # continuation character - tack it on
-        long_character <<= 6
-        long_character |= b & 0b00111111
-      elsif started_long_character
-        # not a continuation - so we are done
-        yield long_character # TODO - yield the correct value
-        started_long_character = false # start over
-        long_character = 0
+        amend do |value|
+          (value <<= 6) | (b & 0b00111111)
+        end
       end
 
       if Utf8Parser.is_ascii? b
-        # ascii character - yield it directly
+        # ascii character
         yield b
       elsif Utf8Parser.is_two_byte_start? b
         # start of a two-byte character
-        started_long_character = true
-        long_character = b & 0b00011111
+        yield b & 0b00011111
       elsif Utf8Parser.is_three_byte_start? b
         # start of a three-byte character
-        started_long_character = true
-        long_character = b ^ 0b11100000
+        yield b ^ 0b11100000
       end
-    end
-
-    if started_long_character
-      yield long_character # TODO - yield correct value
     end
   end
 end
