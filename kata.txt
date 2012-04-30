@@ -1,0 +1,27 @@
+UTF8 KATA
+
+BACKGROUND:
+
+- There are tens of thousands of characters in use around the world.
+
+- Each character is assigned a number by the Unicode specification.
+
+- To store a stream of characters, you need to convert to a BINARY
+  format.
+
+Utf-8 is a popular binary format for Unicode.
+- ASCII 0-127: stored as 0xxxxxxx
+- Characters 128-2047:   110xxxxx 10xxxxxx
+- Characters 2048-65535: 1110xxxx 10xxxxxx 10xxxxxx
+- etc.
+
+GOAL: 
+
+Parse a stream of bytes and return the corresponding Unicode
+characters, as integers.
+
+EXAMPLES:
+
+ASCII: abcd
+Two bytes: é
+Three bytes: 你好
